@@ -30,10 +30,9 @@ int loop_peak_handler(const char *path, const char *types, lo_arg **argv, int ar
 int loop_solo_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 int loop_waiting_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 
-int sl_init(const char *local_url, const char *sl_url);
-void sl_end(lo_address ad, lo_server_thread st, const char *local_url);
-void sl_ping(lo_address ad, const char *local_url);
-void sl_register(lo_address ad, const char *local_url, int unreg);
-void sl_register_loop(lo_address ad, const char *local_url, int id, int unreg);
-
-extern sl_t sl;
+int sl_live();
+int sl_init(const char *port, const char *sl_url);
+void sl_end();
+void sl_ping();
+void sl_register(int unreg);
+void sl_register_loop(int id, int unreg);

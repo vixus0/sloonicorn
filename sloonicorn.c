@@ -6,33 +6,32 @@
 
 #define msleep(t) usleep(1000 * t)
 
-#define LOCAL_URL "osc.unix://localhost/tmp/sloonicorn.socket"
-#define SL_URL "osc.unix://localhost/tmp/sooperlooper.socket"
+#define LOCAL_PORT "9955"
+#define SL_URL "osc.udp://localhost:9951"
 #define MH_URL "osc.unix://localhost/tmp/monohorn.socket"
 
-const char *local_url, *sl_url, *mh_url;
-lo_server_thread st;
-lo_address ad;
+const char *local_port, *sl_url, *mh_url;
 
 void handle_sigint(int signal) {
   fprintf(stderr, "sloo: SIGINT exiting\n");
-  sl_end(ad, st, local_url);
+  sl_end();
   exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
   char opt;
 
+  fprintf(stdout, "Sloooooooooooooonicorn!\n\n");
   signal(SIGINT, handle_sigint);
 
-  local_url = LOCAL_URL;
+  local_port = LOCAL_PORT;
   sl_url = SL_URL;
   mh_url = MH_URL;
 
-  while ((opt = getopt(argc, argv, "l:s:m:")) != -1) {
+  while ((opt = getopt(argc, argv, "p:s:m:")) != -1) {
     switch(opt) {
-      case 'l':
-        local_url = optarg;
+      case 'p':
+        local_port = optarg;
         break;
       case 's':
         sl_url = optarg;
@@ -41,23 +40,26 @@ int main(int argc, char *argv[]) {
         mh_url = optarg;
         break;
       default:
-        fprintf(stderr, "%s [-l local_url] [-s sl_url] [-m mh_url]\n", argv[0]);
+        fprintf(stderr, "%s [-p port] [-s sl_url] [-m mh_url]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
   }
 
-  if (sl_init(local_url, sl_url) == -1) {
+  if (sl_init(local_port, sl_url) == -1) {
+    fprintf(stderr, "Failed to init OSC server\n");
     exit(EXIT_FAILURE);
   }
 
-  fprintf(stderr, "sloo: listening on %s\n", local_url);
-
-  while (sl.live == 0) {
+  while (sl_live() == 0) {
     fprintf(stderr, "sloo: pinging SL at %s\n", sl_url);
-    msleep(100);
+    sl_ping();
+    msleep(1000);
   }
 
-  sl_end(ad, st, local_url);
+  fprintf(stderr, "sloo: registering callbacks\n");
+
+  sl_register(0);
+  sl_end();
 
   return EXIT_SUCCESS;
 }
