@@ -50,15 +50,18 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  while (sl_live() == 0) {
-    fprintf(stderr, "sloo: pinging SL at %s\n", sl_url);
-    sl_ping();
-    msleep(1000);
+  while (1) {
+    while (sl_live() == 0) {
+      fprintf(stderr, "sloo: pinging SL at %s\n", sl_url);
+      sl_ping();
+      msleep(1000);
+    }
+
+    sl_register(0);
+    sl_die();
+    msleep(100);
   }
 
-  fprintf(stderr, "sloo: registering callbacks\n");
-
-  sl_register(0);
   sl_end();
 
   return EXIT_SUCCESS;

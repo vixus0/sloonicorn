@@ -33,6 +33,7 @@ int loop_waiting_handler(const char *path, const char *types, lo_arg **argv, int
 int sl_live();
 int sl_init(const char *port, const char *sl_url);
 void sl_end();
+void sl_die();
 void sl_ping();
 void sl_register(int unreg);
 void sl_register_loop(int id, int unreg);

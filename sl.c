@@ -26,36 +26,40 @@ int selected_loop_handler(const char *path, const char *types, lo_arg **argv, in
   int rv = (int)(argv[2]->f);
   int loop = (rv < sl.loop_count) ? rv : sl.loop_count - 1;
   sl.loops[loop].selected = 1;
+  fprintf(stderr, "looper: selected_loop = %d\n", loop);
   return 0;
 }
 
-int loop_len_hander(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_len_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].len = argv[2]->f;
   return 0;
 }
 
-int loop_pos_hander(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_pos_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].pos = argv[2]->f;
   return 0;
 }
 
-int loop_peak_hander(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].in_peak = argv[2]->f;
   return 0;
 }
 
-int loop_state_hander(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_state_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].state = (int)argv[2]->f;
+  fprintf(stderr, "looper: loop[%d] state = %d\n", argv[0]->i, (int)argv[2]->f);
   return 0;
 }
 
-int loop_solo_hander(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_solo_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].solo = (int)argv[2]->f;
+  fprintf(stderr, "looper: loop[%d] solo = %d\n", argv[0]->i, (int)argv[2]->f);
   return 0;
 }
 
-int loop_waiting_hander(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_waiting_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].waiting = (int)argv[2]->f;
+  fprintf(stderr, "looper: loop[%d] waiting = %d\n", argv[0]->i, (int)argv[2]->f);
   return 0;
 }
 
@@ -82,13 +86,13 @@ int sl_init(const char *port, const char *sl_url) {
 
   lo_server_thread_add_method(st, "/ping", "ssi", ping_handler, NULL);
 
-  lo_server_thread_add_method(st, "/state", "isf", loop_state_hander, NULL);
-  lo_server_thread_add_method(st, "/solo", "isf", loop_solo_hander, NULL);
-  lo_server_thread_add_method(st, "/waiting", "isf", loop_waiting_hander, NULL);
-
-  lo_server_thread_add_method(st, "/len", "isf", loop_len_hander, NULL);
-  lo_server_thread_add_method(st, "/pos", "isf", loop_pos_hander, NULL);
-  lo_server_thread_add_method(st, "/peak", "isf", loop_peak_hander, NULL);
+  lo_server_thread_add_method(st, "/selected_loop", "isf", selected_loop_handler, NULL);
+  lo_server_thread_add_method(st, "/state", "isf", loop_state_handler, NULL);
+  lo_server_thread_add_method(st, "/solo", "isf", loop_solo_handler, NULL);
+  lo_server_thread_add_method(st, "/waiting", "isf", loop_waiting_handler, NULL);
+  lo_server_thread_add_method(st, "/len", "isf", loop_len_handler, NULL);
+  lo_server_thread_add_method(st, "/pos", "isf", loop_pos_handler, NULL);
+  lo_server_thread_add_method(st, "/peak", "isf", loop_peak_handler, NULL);
 
   lo_server_thread_start(st);
 
@@ -120,8 +124,10 @@ void sl_register(int unreg) {
   }
 
   if (unreg == 0) {
+    fprintf(stderr, "sloo: registering callbacks\n");
     lo_send(ad, "/register_update", "sss", "selected_loop_num", url, "/selected_loop");
   } else {
+    fprintf(stderr, "sloo: removing callbacks\n");
     lo_send(ad, "/unregister_update", "sss", "selected_loop_num", url, "/selected_loop");
   }
 }
@@ -131,26 +137,28 @@ void sl_register_loop(int id, int unreg) {
   char buf[128];
 
   if (unreg == 0) {
-    snprintf(buf, sizeof(buf), "/sl/%d/register_update", id);
-  } else {
-    snprintf(buf, sizeof(buf), "/sl/%d/unregister_update", id);
-  }
-
-  lo_send(ad, buf, "sss", "state", url, "/state");
-  lo_send(ad, buf, "sss", "is_soloed", url, "/solo");
-  lo_send(ad, buf, "sss", "waiting", url, "/waiting");
-
-  if (unreg == 0) {
     snprintf(buf, sizeof(buf), "/sl/%d/register_auto_update", id);
+    lo_send(ad, buf, "siss", "state", UPDATE_MS, url, "/state");
+    lo_send(ad, buf, "siss", "is_soloed", UPDATE_MS, url, "/solo");
+    lo_send(ad, buf, "siss", "waiting", UPDATE_MS, url, "/waiting");
+    lo_send(ad, buf, "siss", "loop_len", UPDATE_MS, url, "/len");
+    lo_send(ad, buf, "siss", "loop_pos", UPDATE_MS, url, "/pos");
+    lo_send(ad, buf, "siss", "in_peak_meter", UPDATE_MS, url, "/peak");
   } else {
     snprintf(buf, sizeof(buf), "/sl/%d/unregister_auto_update", id);
+    lo_send(ad, buf, "sss", "state", url, "/state");
+    lo_send(ad, buf, "sss", "is_soloed", url, "/solo");
+    lo_send(ad, buf, "sss", "waiting", url, "/waiting");
+    lo_send(ad, buf, "sss", "loop_len", url, "/len");
+    lo_send(ad, buf, "sss", "loop_pos", url, "/pos");
+    lo_send(ad, buf, "sss", "in_peak_meter", url, "/peak");
   }
-
-  lo_send(ad, buf, "siss", "loop_len", UPDATE_MS, url, "/len");
-  lo_send(ad, buf, "siss", "loop_pos", UPDATE_MS, url, "/pos");
-  lo_send(ad, buf, "siss", "in_peak_meter", UPDATE_MS, url, "/peak");
 }
 
 int sl_live() {
   return sl.live;
+}
+
+void sl_die() {
+  sl.live = 0;
 }
