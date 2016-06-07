@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "sl.h"
+#include "mh.h"
 
 #define msleep(t) usleep(1000 * t)
 
@@ -15,6 +16,7 @@ const char *local_port, *sl_url, *mh_url;
 void handle_sigint(int signal) {
   fprintf(stderr, "sloo: SIGINT exiting\n");
   sl_end();
+  mh_end();
   exit(EXIT_FAILURE);
 }
 
@@ -50,6 +52,11 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
+  if (mh_init(mh_url) == -1) {
+    fprintf(stderr, "Failed to contact monohorn\n");
+    exit(EXIT_FAILURE);
+  }
+
   while (1) {
     while (sl_live() == 0) {
       fprintf(stderr, "sloo: pinging SL at %s\n", sl_url);
@@ -59,10 +66,12 @@ int main(int argc, char *argv[]) {
 
     sl_register(0);
     sl_die();
+    mh_update();
     msleep(100);
   }
 
   sl_end();
+  mh_end();
 
   return EXIT_SUCCESS;
 }

@@ -12,7 +12,7 @@
 
 typedef struct loop {
   int state, solo, selected, waiting;
-  float len, pos, in_peak;
+  float len, pos, in_peak, out_peak;
 } loop_t;
 
 typedef struct sl {
@@ -26,7 +26,8 @@ int selected_loop_handler(const char *path, const char *types, lo_arg **argv, in
 int loop_len_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 int loop_pos_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 int loop_state_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
-int loop_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
+int loop_in_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
+int loop_out_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 int loop_solo_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 int loop_waiting_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data);
 
@@ -37,3 +38,12 @@ void sl_die();
 void sl_ping();
 void sl_register(int unreg);
 void sl_register_loop(int id, int unreg);
+
+int sl_loop_count();
+int sl_loop_state(int id);
+int sl_loop_solo(int id);
+int sl_loop_selected(int id);
+int sl_loop_waiting(int id);
+float sl_loop_progress(int id);
+float sl_loop_in_peak(int id);
+float sl_loop_out_peak(int id);

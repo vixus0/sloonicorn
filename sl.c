@@ -40,8 +40,13 @@ int loop_pos_handler(const char *path, const char *types, lo_arg **argv, int arg
   return 0;
 }
 
-int loop_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+int loop_in_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].in_peak = argv[2]->f;
+  return 0;
+}
+
+int loop_out_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
+  sl.loops[argv[0]->i].out_peak = argv[2]->f;
   return 0;
 }
 
@@ -92,7 +97,8 @@ int sl_init(const char *port, const char *sl_url) {
   lo_server_thread_add_method(st, "/waiting", "isf", loop_waiting_handler, NULL);
   lo_server_thread_add_method(st, "/len", "isf", loop_len_handler, NULL);
   lo_server_thread_add_method(st, "/pos", "isf", loop_pos_handler, NULL);
-  lo_server_thread_add_method(st, "/peak", "isf", loop_peak_handler, NULL);
+  lo_server_thread_add_method(st, "/in_peak", "isf", loop_in_peak_handler, NULL);
+  lo_server_thread_add_method(st, "/out_peak", "isf", loop_out_peak_handler, NULL);
 
   lo_server_thread_start(st);
 
@@ -143,7 +149,8 @@ void sl_register_loop(int id, int unreg) {
     lo_send(ad, buf, "siss", "waiting", UPDATE_MS, url, "/waiting");
     lo_send(ad, buf, "siss", "loop_len", UPDATE_MS, url, "/len");
     lo_send(ad, buf, "siss", "loop_pos", UPDATE_MS, url, "/pos");
-    lo_send(ad, buf, "siss", "in_peak_meter", UPDATE_MS, url, "/peak");
+    lo_send(ad, buf, "siss", "in_peak_meter", UPDATE_MS, url, "/in_peak");
+    lo_send(ad, buf, "siss", "out_peak_meter", UPDATE_MS, url, "/out_peak");
   } else {
     snprintf(buf, sizeof(buf), "/sl/%d/unregister_auto_update", id);
     lo_send(ad, buf, "sss", "state", url, "/state");
@@ -151,7 +158,8 @@ void sl_register_loop(int id, int unreg) {
     lo_send(ad, buf, "sss", "waiting", url, "/waiting");
     lo_send(ad, buf, "sss", "loop_len", url, "/len");
     lo_send(ad, buf, "sss", "loop_pos", url, "/pos");
-    lo_send(ad, buf, "sss", "in_peak_meter", url, "/peak");
+    lo_send(ad, buf, "sss", "in_peak_meter", url, "/in_peak");
+    lo_send(ad, buf, "sss", "out_peak_meter", url, "/out_peak");
   }
 }
 
@@ -161,4 +169,36 @@ int sl_live() {
 
 void sl_die() {
   sl.live = 0;
+}
+
+int sl_loop_count() {
+  return sl.loop_count;
+}
+
+int sl_loop_state(int id) {
+  return sl.loops[id].state;
+}
+
+int sl_loop_solo(int id) {
+  return sl.loops[id].solo;
+}
+
+int sl_loop_selected(int id) {
+  return sl.loops[id].selected;
+}
+
+int sl_loop_waiting(int id) {
+  return sl.loops[id].waiting;
+}
+
+float sl_loop_progress(int id) {
+  return sl.loops[id].pos / sl.loops[id].len;
+}
+
+float sl_loop_in_peak(int id) {
+  return sl.loops[id].in_peak;
+}
+
+float sl_loop_out_peak(int id) {
+  return sl.loops[id].out_peak;
 }
