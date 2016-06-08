@@ -17,7 +17,7 @@ int ping_handler(const char *path, const char *types, lo_arg **argv, int argc, v
   if (sl.live == 0) {
     sl.live = 1;
     sl.loop_count = argv[2]->i % MAX_LOOPS;
-    fprintf(stderr, "sloo: pong! %s %s %d\n", &argv[0]->s, &argv[1]->s, sl.loop_count);
+    fprintf(stderr, "sl: pong! %s %s %d\n", &argv[0]->s, &argv[1]->s, sl.loop_count);
   }
   return 0;
 }
@@ -26,7 +26,7 @@ int selected_loop_handler(const char *path, const char *types, lo_arg **argv, in
   int rv = (int)(argv[2]->f);
   int loop = (rv < sl.loop_count) ? rv : sl.loop_count - 1;
   sl.loops[loop].selected = 1;
-  fprintf(stderr, "looper: selected_loop = %d\n", loop);
+  fprintf(stderr, "sl: selected_loop = %d\n", loop);
   return 0;
 }
 
@@ -52,19 +52,19 @@ int loop_out_peak_handler(const char *path, const char *types, lo_arg **argv, in
 
 int loop_state_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].state = (int)argv[2]->f;
-  fprintf(stderr, "looper: loop[%d] state = %d\n", argv[0]->i, (int)argv[2]->f);
+  fprintf(stderr, "sl: loop[%d] state = %d\n", argv[0]->i, (int)argv[2]->f);
   return 0;
 }
 
 int loop_solo_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].solo = (int)argv[2]->f;
-  fprintf(stderr, "looper: loop[%d] solo = %d\n", argv[0]->i, (int)argv[2]->f);
+  fprintf(stderr, "sl: loop[%d] solo = %d\n", argv[0]->i, (int)argv[2]->f);
   return 0;
 }
 
 int loop_waiting_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].waiting = (int)argv[2]->f;
-  fprintf(stderr, "looper: loop[%d] waiting = %d\n", argv[0]->i, (int)argv[2]->f);
+  fprintf(stderr, "sl: loop[%d] waiting = %d\n", argv[0]->i, (int)argv[2]->f);
   return 0;
 }
 
@@ -78,16 +78,16 @@ int sl_init(const char *port, const char *sl_url) {
   ad = lo_address_new_from_url(sl_url);
 
   if (!st) {
-    fprintf(stderr, "sloo: error creating server on port %s\n", port);
+    fprintf(stderr, "sl error: could not create server on port %s\n", port);
     return -1;
   }
 
   if (lo_address_errno(ad) < 0) {
-    fprintf(stderr, "sloo: error connecting to SooperLooper at %s\n", sl_url);
+    fprintf(stderr, "sl error: could not connect to SooperLooper at %s\n", sl_url);
     return -1;
   }
 
-  fprintf(stderr, "sloo: listening on %s\n", lo_server_thread_get_url(st));
+  fprintf(stderr, "sl: listening on %s\n", lo_server_thread_get_url(st));
 
   lo_server_thread_add_method(st, "/ping", "ssi", ping_handler, NULL);
 
@@ -106,7 +106,7 @@ int sl_init(const char *port, const char *sl_url) {
 }
 
 void sl_end() {
-  fprintf(stderr, "sloo: sl_cleanup\n");
+  fprintf(stderr, "sl: cleanup\n");
 
   if (ad != NULL && sl_live()) {
     sl_register(1);
@@ -130,10 +130,10 @@ void sl_register(int unreg) {
   }
 
   if (unreg == 0) {
-    fprintf(stderr, "sloo: registering callbacks\n");
+    fprintf(stderr, "sl: registering callbacks\n");
     lo_send(ad, "/register_update", "sss", "selected_loop_num", url, "/selected_loop");
   } else {
-    fprintf(stderr, "sloo: removing callbacks\n");
+    fprintf(stderr, "sl: removing callbacks\n");
     lo_send(ad, "/unregister_update", "sss", "selected_loop_num", url, "/selected_loop");
   }
 }
@@ -192,7 +192,7 @@ int sl_loop_waiting(int id) {
 }
 
 float sl_loop_progress(int id) {
-  return sl.loops[id].pos / sl.loops[id].len;
+  return (sl.loops[id].len < 0.01f) ? 0 : sl.loops[id].pos / sl.loops[id].len;
 }
 
 float sl_loop_in_peak(int id) {

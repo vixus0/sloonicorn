@@ -48,12 +48,13 @@ int main(int argc, char *argv[]) {
   }
 
   if (sl_init(local_port, sl_url) == -1) {
-    fprintf(stderr, "Failed to init OSC server\n");
+    fprintf(stderr, "sloo: failed to init OSC server\n");
     exit(EXIT_FAILURE);
   }
 
   if (mh_init(mh_url) == -1) {
-    fprintf(stderr, "Failed to contact monohorn\n");
+    fprintf(stderr, "sloo: failed to contact monohorn\n");
+    sl_end();
     exit(EXIT_FAILURE);
   }
 
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
     sl_register(0);
     sl_die();
     mh_update();
-    msleep(100);
+    msleep(3000);
   }
 
   sl_end();

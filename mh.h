@@ -13,6 +13,7 @@
 #define C_blue      0x000020
 #define C_purple    0x100010
 #define C_pink      0x200010
+#define C_white     0x101010
 
 #define ROW_H 2
 #define ROW_W 8

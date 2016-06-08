@@ -39,13 +39,14 @@ class MonoHorn(Server):
         self.matrix = Matrix()
         self.matrix.root.after(0, self.update)
         self.matrix.root.mainloop()
-    
+
     @make_method('/set', 'iii')
     def set_handler(self, path, args):
         print(path, args)
         x, y, clr_int = args
         clr = '#' + hex(clr_int)[2:].rjust(6, '0')
-        self.matrix.updates.append((x, y, clr))
+        if x >= 0 and x < self.matrix.cols and y >= 0 and y < self.matrix.rows:
+            self.matrix.updates.append((x, y, clr))
 
     @make_method('/render', None)
     def render_handler(self, path, args):
@@ -66,4 +67,9 @@ class MonoHorn(Server):
         self.matrix.root.after(100, self.update)
 
 if __name__ == '__main__':
-    mh = MonoHorn(sys.argv[1])
+    if len(sys.argv) < 2:
+        socket = '/tmp/testhat.socket'
+    else:
+        socket = sys.argv[1]
+
+    mh = MonoHorn(socket)
