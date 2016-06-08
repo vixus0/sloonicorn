@@ -21,9 +21,8 @@ void handle_sigint(int signal) {
 }
 
 int main(int argc, char *argv[]) {
-  char opt;
+  int opt;
 
-  fprintf(stdout, "Sloooooooooooooonicorn!\n\n");
   signal(SIGINT, handle_sigint);
 
   local_port = LOCAL_PORT;
@@ -46,6 +45,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
   }
+
+  fprintf(stdout, "Sloooooooooooooonicorn!\n\n");
 
   if (sl_init(local_port, sl_url) == -1) {
     fprintf(stderr, "sloo: failed to init OSC server\n");
