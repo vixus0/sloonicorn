@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
       case 'm':
         mh_url = optarg;
         break;
-      default:
+      case '?':
         fprintf(stderr, "%s [-p port] [-s sl_url] [-m mh_url]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
