@@ -18,6 +18,10 @@ int mh_init(const char *mh_url) {
     return -1;
   }
 
+  return 0;
+}
+
+int mh_clear() {
   if (lo_send(mh, "/clear", NULL) == -1) {
     fprintf(stderr, "mh error: could not send to Monohorn\n");
     return -1;

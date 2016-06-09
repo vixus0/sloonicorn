@@ -60,16 +60,26 @@ int main(int argc, char *argv[]) {
   }
 
   while (1) {
+    while (mh_clear() == -1) {
+      fprintf(stderr, "sloo: sending to monohorn\n");
+      msleep(500);
+    }
+
     while (sl_live() == 0) {
       fprintf(stderr, "sloo: pinging SL at %s\n", sl_url);
       sl_ping();
-      msleep(1000);
+      msleep(500);
     }
 
-    sl_register(0);
-    sl_die();
     mh_update();
-    msleep(3000);
+    sl_update(100);
+
+    if (sl_last_reply() > 3000) {
+      fprintf(stderr, "sloo: haven't heard from SL in a while...\n");
+      sl_die();
+    }
+
+    msleep(100);
   }
 
   sl_end();

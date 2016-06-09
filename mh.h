@@ -19,6 +19,7 @@
 #define ROW_W 8
 
 int mh_init(const char *mh_url);
+int mh_clear();
 void mh_led(int x, int y, int clr);
 void mh_update();
 void mh_end();

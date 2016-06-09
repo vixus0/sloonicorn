@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include "sl.h"
 
+int last_reply = 0;
+
 sl_t sl = {
   .live = 0,
   .loop_count = 0,
@@ -14,11 +16,11 @@ lo_server_thread st;
 lo_address ad;
 
 int ping_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
-  if (sl.live == 0) {
-    sl.live = 1;
-    sl.loop_count = argv[2]->i % MAX_LOOPS;
-    fprintf(stderr, "sl: pong! %s %s %d\n", &argv[0]->s, &argv[1]->s, sl.loop_count);
-  }
+  fprintf(stderr, "sl: pong! %s %s %d\n", &argv[0]->s, &argv[1]->s, argv[2]->i);
+  last_reply = 0;
+  sl.live = 1;
+  sl.loop_count = argv[2]->i;
+  sl_register(0);
   return 0;
 }
 
@@ -27,44 +29,52 @@ int selected_loop_handler(const char *path, const char *types, lo_arg **argv, in
   int loop = (rv < sl.loop_count) ? rv : sl.loop_count - 1;
   sl.loops[loop].selected = 1;
   fprintf(stderr, "sl: selected_loop = %d\n", loop);
+  last_reply = 0;
   return 0;
 }
 
 int loop_len_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].len = argv[2]->f;
+  last_reply = 0;
   return 0;
 }
 
 int loop_pos_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].pos = argv[2]->f;
+  last_reply = 0;
   return 0;
 }
 
 int loop_in_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].in_peak = argv[2]->f;
+  last_reply = 0;
   return 0;
 }
 
 int loop_out_peak_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].out_peak = argv[2]->f;
+  last_reply = 0;
   return 0;
 }
 
 int loop_state_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].state = (int)argv[2]->f;
   fprintf(stderr, "sl: loop[%d] state = %d\n", argv[0]->i, (int)argv[2]->f);
+  last_reply = 0;
   return 0;
 }
 
 int loop_solo_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].solo = (int)argv[2]->f;
   fprintf(stderr, "sl: loop[%d] solo = %d\n", argv[0]->i, (int)argv[2]->f);
+  last_reply = 0;
   return 0;
 }
 
 int loop_waiting_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
   sl.loops[argv[0]->i].waiting = (int)argv[2]->f;
   fprintf(stderr, "sl: loop[%d] waiting = %d\n", argv[0]->i, (int)argv[2]->f);
+  last_reply = 0;
   return 0;
 }
 
@@ -74,6 +84,7 @@ void error_handler(int errno, const char *msg, const char *path) {
 }
 
 int sl_init(const char *port, const char *sl_url) {
+  last_reply = 0;
   st = lo_server_thread_new(port, error_handler);
   ad = lo_address_new_from_url(sl_url);
 
@@ -201,4 +212,12 @@ float sl_loop_in_peak(int id) {
 
 float sl_loop_out_peak(int id) {
   return sl.loops[id].out_peak;
+}
+
+int sl_last_reply() {
+  return last_reply;
+}
+
+void sl_update(int amount) {
+  last_reply += amount;
 }
