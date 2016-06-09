@@ -54,17 +54,17 @@ int main(int argc, char *argv[]) {
   }
 
   if (mh_init(mh_url) == -1) {
-    fprintf(stderr, "sloo: failed to contact monohorn\n");
+    fprintf(stderr, "sloo: failed to connect to monohorn\n");
     sl_end();
     exit(EXIT_FAILURE);
   }
 
-  while (1) {
-    while (mh_clear() == -1) {
-      fprintf(stderr, "sloo: sending to monohorn\n");
-      msleep(500);
-    }
+  while (mh_clear() == -1) {
+    fprintf(stderr, "sloo: attempting to contact monohorn\n");
+    msleep(500);
+  }
 
+  while (1) {
     while (sl_live() == 0) {
       fprintf(stderr, "sloo: pinging SL at %s\n", sl_url);
       sl_ping();
