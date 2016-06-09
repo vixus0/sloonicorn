@@ -4,7 +4,7 @@
 #include "mh.h"
 #include "sl.h"
 
-#define led(x, y, clr) lo_send(mh, "/set", "iii", x, y, clr)
+#define led(x, y, clr) lo_send(mh, "/set", "iii", ROW_W - x, y, clr)
 
 lo_address mh;
 
