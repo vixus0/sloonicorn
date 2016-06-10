@@ -46,10 +46,10 @@ void mh_update() {
         clr = C_red;
         break;
       case 4: // playing
-        clr = C_lightblue;
+        clr = C_green;
         break;
       case 5: // overdubbing
-        clr = C_purple;
+        clr = C_lightblue;
         break;
       case 8: // replacing
         clr = C_pink;
@@ -73,8 +73,8 @@ void mh_update() {
 
     // selected indicator
     if (sl_loop_selected(loop) == 1) {
-      led(0, y, C_cyan);
-      led(0, y+1, C_cyan);
+      led(0, y, C_magenta);
+      led(0, y+1, C_magenta);
     }
 
     // waiting indicator
