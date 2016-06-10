@@ -1,4 +1,5 @@
 #include <lo/lo.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
