@@ -54,8 +54,11 @@ void mh_update() {
       case 8: // replacing
         clr = C_pink;
         break;
-      default: // muted, everything else
+      case 10: // muted
         clr = C_blue;
+        break;
+      default: // everything else
+        clr = C_black;
     }
 
     if (sl_loop_solo(loop) == 1) clr = C_yellow;
