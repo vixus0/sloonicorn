@@ -33,6 +33,7 @@ int mh_clear() {
 void mh_update() {
   fprintf(stderr, "mh: Monohorn update\n");
 
+  float peak_raw;
   int loop, i, y, clr, prog, peak;
 
   for (loop = 0; loop < sl_loop_count(); loop++) {
@@ -70,8 +71,17 @@ void mh_update() {
     led(prog, y, C_white);
 
     // peak indicator
-    peak = (int)floor(sl_loop_out_peak(loop) * (float)ROW_W);
-    for (i = 0; i < peak; i++) led(i, y+1, C_yellow);
+    peak_raw = sl_loop_out_peak(loop);
+
+    if (peak_raw > 1.0f) {
+      peak = ROW_W;
+      clr = C_red;
+    } else {
+      peak = (int)floor(peak_raw * (float)ROW_W);
+      clr = C_yellow;
+    }
+    
+    for (i = 0; i < peak; i++) led(i, y+1, clr);
     for (; i < ROW_W; i++) led(i, y+1, C_black);
 
     // selected indicator
