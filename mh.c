@@ -73,8 +73,8 @@ void mh_update() {
 
     // selected indicator
     if (sl_loop_selected(loop) == 1) {
-      led(0, y, C_green);
-      led(0, y+1, C_green);
+      led(0, y, C_cyan);
+      led(0, y+1, C_cyan);
     }
 
     // waiting indicator
