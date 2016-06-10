@@ -26,7 +26,7 @@ int ping_handler(const char *path, const char *types, lo_arg **argv, int argc, v
 }
 
 int selected_loop_handler(const char *path, const char *types, lo_arg **argv, int argc, void *data, void *user_data) {
-  int rv = (int)(argv[2]->f);
+  int rv = (int)floor(argv[2]->f);
   int loop = (rv < sl.loop_count) ? rv : sl.loop_count - 1;
   sl.loops[loop].selected = 1;
   fprintf(stderr, "sl: selected_loop = %d\n", loop);
