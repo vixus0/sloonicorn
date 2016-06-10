@@ -20,6 +20,7 @@ int ping_handler(const char *path, const char *types, lo_arg **argv, int argc, v
   last_reply = 0;
   sl.live = 1;
   sl.loop_count = argv[2]->i;
+  sl_init_loops();
   sl_register(0);
   return 0;
 }
@@ -220,4 +221,27 @@ int sl_last_reply() {
 
 void sl_update(int amount) {
   last_reply += amount;
+}
+
+void sl_init_loops() {
+  const char *url = lo_server_thread_get_url(st);
+  char buf[128];
+  int id;
+
+  fprintf(stderr, "sl: requesting initial state\n");
+
+  // globals
+  lo_send(ad, "/get", "sss", "selected_loop_num", url, "/selected_loop");
+
+  // loops
+  for (id = 0; id < sl.loop_count; id++) {
+    snprintf(buf, sizeof(buf), "/sl/%d/get", id);
+    lo_send(ad, buf, "sss", "state", url, "/state");
+    lo_send(ad, buf, "sss", "is_soloed", url, "/solo");
+    lo_send(ad, buf, "sss", "waiting", url, "/waiting");
+    lo_send(ad, buf, "sss", "loop_len", url, "/len");
+    lo_send(ad, buf, "sss", "loop_pos", url, "/pos");
+    lo_send(ad, buf, "sss", "in_peak_meter", url, "/in_peak");
+    lo_send(ad, buf, "sss", "out_peak_meter", url, "/out_peak");
+  }
 }

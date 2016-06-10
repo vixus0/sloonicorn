@@ -7,7 +7,7 @@
 #include <lo/lo.h>
 
 #define MAX_LOOPS 4
-#define UPDATE_MS 100
+#define UPDATE_MS 50
 #define len(a) (sizeof(a) / sizeof(a[0]))
 
 typedef struct loop {
@@ -35,6 +35,7 @@ int sl_live();
 int sl_init(const char *port, const char *sl_url);
 void sl_end();
 void sl_ping();
+void sl_init_loops();
 void sl_register(int unreg);
 void sl_register_loop(int id, int unreg);
 
