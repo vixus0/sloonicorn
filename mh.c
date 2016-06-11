@@ -42,18 +42,24 @@ void mh_update() {
     // progress indicator (bg color indicates recording/playing/muted)
     prog = (int)floor(sl_loop_progress(loop) * (float)ROW_W);
 
+    // use loop output peak unless recording
+    peak_raw = sl_loop_out_peak(loop);
+
     switch (sl_loop_state(loop)) {
       case 2: // recording
         clr = C_red;
+        peak_raw = sl_loop_in_peak(loop);
         break;
       case 4: // playing
         clr = C_green;
         break;
       case 5: // overdubbing
         clr = C_lightblue;
+        peak_raw = sl_loop_in_peak(loop);
         break;
       case 8: // replacing
         clr = C_pink;
+        peak_raw = sl_loop_in_peak(loop);
         break;
       case 10: // muted
         clr = C_blue;
@@ -74,8 +80,6 @@ void mh_update() {
     led(prog, y, C_white);
 
     // peak indicator
-    peak_raw = sl_loop_out_peak(loop);
-
     if (peak_raw > 1.0f) {
       peak = ROW_W;
       clr = C_red;
