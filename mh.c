@@ -58,6 +58,9 @@ void mh_update() {
       case 10: // muted
         clr = C_blue;
         break;
+      case 12: // oneshot
+        clr = C_orange;
+        break;
       default: // everything else
         clr = C_black;
     }
